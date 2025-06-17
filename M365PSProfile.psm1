@@ -231,6 +231,9 @@ Function Uninstall-M365Module {
 		$IsAdmin = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 	}
 
+	#Loaded Assemblys
+	$LoadedAssemblys = [System.AppDomain]::CurrentDomain.GetAssemblies()
+
 	foreach ($Module in $Modules) {
 
 		#Unload Module
@@ -277,12 +280,12 @@ Function Uninstall-M365Module {
 					#FileMode
 					If ($FileMode -eq $true)
 					{
-						Write-Host "Using FileMode. Remove Module: $($AZModule.Name)" -ForegroundColor Yellow
+						#Write-Host "Using FileMode. Remove Module: $($AZModule.Name)" -ForegroundColor Yellow
 						$ModulesPath = Get-M365ModulePath -Scope $Scope
 						Get-ChildItem -Path $ModulesPath -Filter "AZ.*" -Recurse | Remove-Item -Force -Recurse
 					} else {
 						try {
-							Write-Host "Uninstall Module: $($AZModule.Name) $($AZModule.Version.ToString())" -ForegroundColor Yellow
+							#Write-Host "Uninstall Module: $($AZModule.Name) $($AZModule.Version.ToString())" -ForegroundColor Yellow
 							Uninstall-PSResource -Name $AZModule.Name -Scope $Scope -SkipDependencyCheck -WarningAction SilentlyContinue
 						} catch [System.ArgumentException] {
 							$FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
@@ -760,7 +763,7 @@ Function Enable-PIM
 {
 	[CmdletBinding()]
 	param(
-		 [switch]$Groups
+		[switch]$Groups
 	)
 
 	#Check if MgGraph is connected and has the right scope
@@ -789,7 +792,7 @@ Function Enable-PIM
 		Write-Host "Getting PIM Groups"
 
 		$INT = 0
-		$URI = "https://graph.microsoft.com/v1.0/identityGovernance/privilegedAccess/group/eligibilitySchedules?`$filter=principalid eq '" + $currentUser + 	"'"
+		$URI = "https://graph.microsoft.com/v1.0/identityGovernance/privilegedAccess/group/eligibilitySchedules?`$filter=principalid eq '" + $currentUser + "'"
 		$PIMGroups = Invoke-MgGraphRequest -URI $uri -Method "GET" -ContentType "application/json"
 		Foreach ($PIMGroup in $PIMGroups.Value)
 		{
@@ -901,9 +904,32 @@ Function Enable-PIM
 	}
 }
 
+
 ###############################################################################
 # Function Get-PIMStatus
 ###############################################################################
+#RoleSettings
+<#
+{
+    "roleDefinitionId": "810a2642-a034-447f-a5e8-41beaa378541",
+    "resourceId": "46bbad84-29f0-4e03-8d34-f6841a5071ad",
+    "subjectId": "6db8cdd5-8e93-462d-9907-994406c07f60",
+    "assignmentState": "Active",
+    "type": "UserAdd",
+    "reason": "Yammer",
+    "ticketNumber": "",
+    "ticketSystem": "",
+    "schedule": {
+        "type": "Once",
+        "startDateTime": null,
+        "endDateTime": null,
+        "duration": "PT480M"
+    },
+    "linkedEligibleRoleAssignmentId": "QiYKgTSgf0Sl6EG-qjeFQdXNuG2Tji1GmQeZRAbAf2A-1-e",
+    "scopedResourceId": ""
+}
+#>
+
 Function Get-PIMStatus
 {
 	[CmdletBinding()]
@@ -931,7 +957,7 @@ Function Get-PIMStatus
 	Write-Host "Your Account: $($Context.Account)" -ForegroundColor Cyan
 	$currentUser = (Get-MgUser -UserId $context.Account).Id
 
-    if ($Groups.IsPresent) 
+	If ($Groups.IsPresent) 
 	{
 		#Get PIM Groups
 	} else {
@@ -942,24 +968,54 @@ Function Get-PIMStatus
 		#$DisplayNames =  $myRoles.RoleDefinition.DisplayName
 
 		$Int =0 
+		$RoleArray = @()
 		Foreach ($Role in $MyRoles)
 		{
 			$Int = $Int + 1
 			$Filter = "Roledefinitionid eq '" + $Role.Roledefinitionid +"'"
 			Write-Verbose "Filter: $Filter"
+
 			$RoleStatus = Get-MgRoleManagementDirectoryRoleAssignmentScheduleInstance -Filter $Filter -Top 1
 			$RoleDisplayName = $Role.RoleDefinition.DisplayName
 			$AssignmentType = $RoleStatus.AssignmentType
 			$StartDateTime = $RoleStatus.StartDateTime
 			$EndDateTime = $RoleStatus.EndDateTime
-			Write-Host "$($int). $RoleDisplayName Status: $AssignmentType Start: $StartDateTime End: $EndDateTime"
+			#Write-Host "$($int). $RoleDisplayName Status: $AssignmentType Start: $StartDateTime End: $EndDateTime"
+
+
+			$MyRoleObject = [PSCustomObject]@{
+				#RoleStatus      = $RoleStatus
+				RoleDisplayName = $RoleDisplayName
+				AssignmentType  = $AssignmentType
+				StartDateTime   = $StartDateTime
+				EndDateTime     = $EndDateTime
+			}
+			$RoleArray += $MyRoleObject
+
 		}
+		$RoleArray | Format-Table
 	}
 }
+
+
+
 
 ###############################################################################
 # Disable-PIM
 ###############################################################################
+#Deacitvate Role
+<#
+{
+    "roleDefinitionId": "810a2642-a034-447f-a5e8-41beaa378541",
+    "resourceId": "46bbad84-29f0-4e03-8d34-f6841a5071ad",
+    "subjectId": "6db8cdd5-8e93-462d-9907-994406c07f60",
+    "assignmentState": "Active",
+    "type": "UserRemove",
+    "reason": "Deactivation request",
+    "linkedEligibleRoleAssignmentId": "QiYKgTSgf0Sl6EG-qjeFQdXNuG2Tji1GmQeZRAbAf2A-1",
+    "scopedResourceId": null
+}
+#>
 Function Disable-PIM
 {
 	[CmdletBinding()]
@@ -991,6 +1047,32 @@ Function Disable-PIM
 	{
 		#Get PIM Groups
 	} else {
+		# Get all available roles
+		Write-Host "Getting Eligible Roles"
+		$myRoles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule -ExpandProperty RoleDefinition -All -Filter "principalId eq '$currentuser'"
+		#$DisplayNames =  $myRoles.RoleDefinition.DisplayName
 
+		$Int =0 
+		Foreach ($Role in $MyRoles)
+		{
+			$Int = $Int + 1
+			$RoleDisplayName = $Role.RoleDefinition.DisplayName
+			Write-Host "$($int). $RoleDisplayName"
+		}
+
+		# Prompt the user to select a number
+		$selectedNumber = Read-Host "Select a number to proceed"
+
+		$Role = $myRoles[$SelectedNumber -1]
+
+		Write-Host "Disabling PIM Role: $($Role.RoleDefinition.DisplayName)" -ForegroundColor Yellow
+
+		try {
+			Set-MgRoleManagementDirectoryRoleEligibilitySchedule -UnifiedRoleEligibilityScheduleId $Role.Id -Status "denied" -ErrorAction Stop
+			Write-Host "PIM Role disabled successfully." -ForegroundColor Green
+		} catch {
+			Write-Host "Error disabling PIM Role: $($_.Exception.Message)" -ForegroundColor Red
+			return
+		}
 	}
 }
