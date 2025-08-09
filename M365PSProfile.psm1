@@ -750,6 +750,8 @@ If (-not(Test-Path -Path $Profile))
 ###############################################################################
 # Function Enable-PIM
 ###############################################################################
+#https://learn.microsoft.com/en-us/graph/identity-governance-pim-rules-overview
+
 #Add -Groups Parameter to get the PIM Groups
 #Connect-MgGraph -Scopes PrivilegedEligibilitySchedule.Read.AzureADGroup,RoleAssignmentSchedule.ReadWrite.Directory -NoWelcome
 #Connect-MgGraph -Scopes PrivilegedEligibilitySchedule.ReadWrite.AzureADGroup,RoleAssignmentSchedule.ReadWrite.Directory -NoWelcome
@@ -860,6 +862,11 @@ Function Enable-PIM
 		Write-Host "Getting Eligible Roles"
 		$myRoles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule -ExpandProperty RoleDefinition -All -Filter "principalId eq '$currentuser'"
 		#$DisplayNames =  $myRoles.RoleDefinition.DisplayName
+		#Get-MgPolicyRoleManagementPolicy -Filter "scopeId eq '/' and scopeType eq 'DirectoryRole'"
+		#Get-MgPolicyRoleManagementPolicyRule -UnifiedRoleManagementPolicyId $unifiedRoleManagementPolicyId -UnifiedRoleManagementPolicyRuleId $unifiedRoleManagementPolicyRuleId
+		#Get PIM Role Rule like Time and Ticketnumber
+		#$policy = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/policies/roleManagementPolicies/DirectoryRole_46bbad84-29f0-4e03-8d34-f6841a5071ad_20a5c74b-d9eb-4998-909a-ecba58414f09?$expand=rules"
+		#$policy
 
 		$Int =0 
 		Foreach ($Role in $MyRoles)
@@ -934,7 +941,7 @@ Function Get-PIMStatus
 {
 	[CmdletBinding()]
 	param(
-		 [switch]$Groups
+		[switch]$Groups
 	)
 
 	#Check if MgGraph is connected and has the right scope
@@ -1020,7 +1027,7 @@ Function Disable-PIM
 {
 	[CmdletBinding()]
 	param(
-		 [switch]$Groups
+		[switch]$Groups
 	)
 
 	#Check if MgGraph is connected and has the right scope
