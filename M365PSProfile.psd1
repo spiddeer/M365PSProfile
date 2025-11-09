@@ -112,15 +112,8 @@ PrivateData = @{
 ---------------------------------------------------------------------------------------------
 Whats new in this release:
 V0.9.1
-- Added Privileged Identity Management (PIM) Functions
-    - Enable-PIM
-    - Get-PIMStatus
-    - Disable-PIM
-
-V0.9.0
-- Added MicrosoftPlaces Module to the Standard Modules (Get-M365StandardModule)
-- Bugfix: Uninstall-M365Module -FileMode did not cover all aspects
-- Updated to Microsoft.PowerShell.PSResourceGet 1.1.1
+- Changed: Replace Uninstall-PSResource with Uninstall-M365Module -FileMode to cover all aspects of uninstallation
+- Changed: Multiple Modules will be uninstalled after 5 seconds delay with User Warning
 ---------------------------------------------------------------------------------------------
 '
 } # End of PSData hashtable
