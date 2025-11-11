@@ -664,7 +664,7 @@ Function Install-M365Module {
 
                 #count back from 5 to 1 and remove old Versions
                 5..1 | ForEach-Object {
-                    Write-Host "WARNING: $Module > Multiple Versions found. Uninstall of old Versions starts in $_ seconds... (Hit Ctrl+C to cancel)" -ForegroundColor Yellow
+                    Write-Host "WARNING: $Module > Multiple Versions found. Uninstall starts in $_ seconds... (Hit Ctrl+C to cancel)" -ForegroundColor Yellow
                     Start-Sleep -Seconds 1
                 }
                 #Uninstall all Modules
