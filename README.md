@@ -153,6 +153,8 @@ These are the Modules that are installed if you don't use an Array with the -Mod
 | WhiteboardAdmin | Manage Whiteboards |
 | Microsoft.Graph | [Microsoft.Graph](https://graph.microsoft.com/v1.0) |
 | Microsoft.Graph.Beta | [Microsoft.Graph.Beta](https://graph.microsoft.com/beta) |
+| Microsoft.Graph.Beta | Microsoft.Entra |
+| Microsoft.Graph.Beta | Microsoft.Entra .Beta |
 | MicrosoftPlaces | Microsoft Places |
 | PSMSALNet| PowerShell 7.4 MSAL.NET wrapper|
 | MSIdentityTools | Additional Functions for Identity |

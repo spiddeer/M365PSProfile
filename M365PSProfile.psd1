@@ -114,6 +114,8 @@ Whats new in this release:
 V0.9.1
 - Changed: Replace Uninstall-PSResource with Uninstall-M365Module -FileMode to cover all aspects of uninstallation
 - Changed: Multiple Modules will be uninstalled after 5 seconds delay with User Warning
+- Added: KeepMultipleVersions switch to Install-M365Module to keep multiple Versions of Modules installed
+- Added: Microsoft.Entra and Microsoft.Entra.Beta to Standard Modules List
 ---------------------------------------------------------------------------------------------
 '
 } # End of PSData hashtable
