@@ -232,7 +232,7 @@ Function Uninstall-M365Module {
     }
 
     #Loaded Assemblys
-    $LoadedAssemblys = [System.AppDomain]::CurrentDomain.GetAssemblies()
+    #$LoadedAssemblys = [System.AppDomain]::CurrentDomain.GetAssemblies()
 
     foreach ($Module in $Modules) {
 
@@ -261,7 +261,7 @@ Function Uninstall-M365Module {
                         Uninstall-PSResource -Name $Module -Scope $Scope -SkipDependencyCheck -ErrorAction Stop
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
-                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource") 
+                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
                         {
                             Write-Host "Error occured. Try using -FileMode" -ForegroundColor Red
                         }
@@ -289,7 +289,7 @@ Function Uninstall-M365Module {
                             Uninstall-PSResource -Name $AZModule.Name -Scope $Scope -SkipDependencyCheck -WarningAction SilentlyContinue
                         } catch [System.ArgumentException] {
                             $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
-                            if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource") 
+                            if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
                             {
                                 Write-Host "Error occured. Try using -FileMode" -ForegroundColor Red
                             }
@@ -313,7 +313,7 @@ Function Uninstall-M365Module {
                         Get-InstalledPSResource -Name "Microsoft.Graph.*" -Scope $Scope -ErrorAction SilentlyContinue | Where-Object {$_.Name -notmatch "Microsoft.Graph.Beta"} | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
-                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource") 
+                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
                         {
                             Write-Host "Error occured. Try using -FileMode" -ForegroundColor Red
                         }
@@ -336,7 +336,7 @@ Function Uninstall-M365Module {
                         Get-InstalledPSResource -Name "Microsoft.Graph.Beta*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
-                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource") 
+                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
                         {
                             Write-Host "Error Occured try using -FileMode" -ForegroundColor Red
                         }
@@ -368,7 +368,7 @@ Function Uninstall-M365Module {
                         Get-InstalledPSResource -Name "AZ.*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
-                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource") 
+                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
                         {
                             Write-Host "Error Occured try using -FileMode" -ForegroundColor Red
                         }
@@ -391,7 +391,7 @@ Function Uninstall-M365Module {
                         Get-InstalledPSResource -Name "Microsoft.Graph.*" -Scope $Scope -ErrorAction SilentlyContinue | Where-Object {$_.Name -notmatch "Microsoft.Graph.Beta"} | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
-                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource") 
+                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
                         {
                             Write-Host "Error Occured try using -FileMode" -ForegroundColor Red
                         }
@@ -414,7 +414,7 @@ Function Uninstall-M365Module {
                         Get-InstalledPSResource -Name "Microsoft.Graph.Beta*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
-                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource") 
+                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
                         {
                             Write-Host "Error Occured try using -FileMode" -ForegroundColor Red
                         }
@@ -676,34 +676,6 @@ Function Install-M365Module {
                 Write-Host "Install newest Module $Module $PSGalleryVersion" -ForegroundColor Yellow
                 Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository #-Prerelease
 
-
-                <#
-                Write-Host "WARNING: $Module > Multiple Versions found. Uninstall old Versions? (Default is Yes)" -ForegroundColor Yellow
-                $Readhost = Read-Host " ( y / n ) "
-                Switch ($ReadHost) {
-                    Y {
-                        #Uninstall all Modules
-                        Write-Host "Uninstall Module"
-                        Uninstall-PSResource -Name $Module -Scope $Scope -SkipDependencyCheck
-
-                        #Install newest Module
-                        Write-Host "Install newest Module $Module $PSGalleryVersion" -ForegroundColor Yellow
-                        Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository #-Prerelease
-                    }
-                    N {
-                        Write-Host "Skip Uninstall old Modules"
-                    }
-                    Default {
-                        #Uninstall all Modules
-                        Write-Host "Uninstall Module"
-                        Uninstall-PSResource -Name $Module -Scope $Scope -SkipDependencyCheck
-
-                        #Install newest Module
-                        Write-Host "Install newest Module $Module $PSGalleryVersion" -ForegroundColor Yellow
-                        Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository #-Prerelease
-                    }
-                }
-                #>
             } else {
                 #Only one Module found
                 [System.Version]$InstalledModuleVersion = $($InstalledModules.Version.ToString())
@@ -768,4 +740,3 @@ If (-not(Test-Path -Path $Profile))
         Write-Host  "You have a PowerShell Profile. You can add the M365PSProfile Update check with Add-M365PSProfile" -ForegroundColor Yellow
     }
 }
-

@@ -3,6 +3,7 @@
 ```pwsh
 Install-PSResource -Name PSScriptAnalyzer -Scope CurrentUser
 Invoke-ScriptAnalyzer -Path C:\GIT_WorkingDir\M365PSProfile\M365PSProfile.psm1 -ExcludeRule PSAvoidUsingWriteHost
+Invoke-ScriptAnalyzer -Path C:\GIT_WorkingDir\M365PSProfile\M365PSProfile.psm1 -ExcludeRule PSAvoidUsingWriteHost,PSAvoidGlobalVars
 ```
 
 ## Testing
