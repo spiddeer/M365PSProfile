@@ -19,6 +19,8 @@
     "WhiteboardAdmin",
     "Microsoft.Graph",
     "Microsoft.Graph.Beta",
+    "Microsoft.Entra",
+    "Microsoft.Entra.Beta",
     "MicrosoftPlaces",
     "MSIdentityTools",
     "PSMSALNet"
@@ -524,6 +526,9 @@ Function Install-M365Module {
         .PARAMETER Repository
         [string]Repository specifies which PowerShell Repository should be used [Default is PSGallery]
 
+        .PARAMETER KeepMultipleVersions
+        [switch]KeepMultipleVersions keeps multiple Versions of the Modules installed [Default is to uninstall old Versions]
+
         .LINK
         https://github.com/fabrisodotps1/M365PSProfile
 
@@ -550,7 +555,8 @@ Function Install-M365Module {
         [parameter(mandatory = $false)][ValidateSet("CurrentUser", "AllUsers")][string]$Scope = "CurrentUser",
         [parameter(mandatory = $false)][bool]$AsciiArt = $true,
         [parameter(mandatory = $false)][bool]$RunInVSCode = $false,
-        [parameter(mandatory = $false)][string]$Repository = "PSGallery"
+        [parameter(mandatory = $false)][string]$Repository = "PSGallery",
+        [parameter(mandatory = $false)][switch]$KeepMultipleVersions = $false
     )
 
     #Check if it is running in VSCode
@@ -630,7 +636,7 @@ Function Install-M365Module {
             If ($PSGalleryVersion -gt $InstalledModuleVersion)
             {
                 Write-Host "Install newest Module $Module $PSGalleryVersion" -ForegroundColor Yellow
-                Install-PSResource $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository
+                Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository
             }
         }
     }
@@ -650,7 +656,7 @@ Function Install-M365Module {
                 $PSGalleryVersion = $PSGalleryModule.Version.ToString()
                 Write-Host "Install newest Module $Module $PSGalleryVersion" -ForegroundColor Yellow
 
-                Install-PSResource $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository #-Prerelease
+                Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository #-Prerelease 
             }
         } else {
             #Module found
@@ -662,15 +668,18 @@ Function Install-M365Module {
             #Check if Multiple Modules are installed
             If (($InstalledModules.count) -gt 1) {
 
-                #count back from 5 to 1 and remove old Versions
-                5..1 | ForEach-Object {
-                    Write-Host "WARNING: $Module > Multiple Versions found. Uninstall starts in $_ seconds... (Hit Ctrl+C to cancel)" -ForegroundColor Yellow
-                    Start-Sleep -Seconds 1
+                If ($KeepMultipleVersions -eq $false)
+                {
+                    #count back from 5 to 1 and remove old Versions
+                    5..1 | ForEach-Object {
+                        Write-Host "WARNING: $Module > Multiple Versions found. Uninstall starts in $_ seconds... (Hit Ctrl+C to cancel)" -ForegroundColor Yellow
+                        Start-Sleep -Seconds 1
+                    }
+                    #Uninstall all Modules
+                    Write-Host "Uninstall Module"
+                    #Uninstall-PSResource -Name $Module -Scope $Scope -SkipDependencyCheck
+                    Uninstall-M365Module -Module $Module -Scope $Scope -FileMode
                 }
-                #Uninstall all Modules
-                Write-Host "Uninstall Module"
-                #Uninstall-PSResource -Name $Module -Scope $Scope -SkipDependencyCheck
-                Uninstall-M365Module -Module $Module -Scope $Scope -FileMode
 
                 #Install newest Module
                 Write-Host "Install newest Module $Module $PSGalleryVersion" -ForegroundColor Yellow
