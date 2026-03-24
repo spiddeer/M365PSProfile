@@ -14,7 +14,7 @@
     "PnP.PowerShell",
     "ORCA",
     "O365CentralizedAddInDeployment",
-    "M365PSProfile"
+    "M365PSProfile",
     "MSCommerce",
     "WhiteboardAdmin",
     "Microsoft.Graph",
@@ -55,16 +55,16 @@ Function Get-M365ModulePath {
         [parameter(mandatory = $false)][ValidateSet("CurrentUser", "AllUsers")][string]$Scope = "CurrentUser"
     )
 
-    $Personal = [environment]::getfolderpath("mydocuments")
-    $ProgramFiles = [environment]::getfolderpath("ProgramFiles")
     If ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows))
     {
         #Windows
-        If ($Host.Version -ge "6.0")
+        $Personal = [environment]::getfolderpath("mydocuments")
+        $ProgramFiles = [environment]::getfolderpath("ProgramFiles")
+        If ($PSVersionTable.PSVersion -ge [version]"6.0")
         {
             $Path = "PowerShell"
         } else {
-            $path = "WindowsPowerShell"
+            $Path = "WindowsPowerShell"
         }
 
         If ($Scope -eq "CurrentUser")
@@ -78,12 +78,20 @@ Function Get-M365ModulePath {
             $AllUsersDir = Join-Path -Path $ProgramFiles -ChildPath $Path
             return $AllUsersDir + "\Modules\"
         }
-    }
+    } else {
+        #Linux / macOS
+        If ($Scope -eq "CurrentUser")
+        {
+            $LocalUserDir = Join-Path -Path $Env:HOME -ChildPath ".local" -AdditionalChildPath "share", "powershell", "Modules"
+            return $LocalUserDir
+        }
 
-    #Unix / OSX
-    #$LocalUserDir = Join-Path -Path $Env:Home -ChildPath ".local", "share", "powershell"
-    #$AllUsersDir = Join-Path -Path "/usr" -ChildPath "local", "share", "powershell"
-    #Return $LocalUserDir, $AllUsersDir
+        If ($Scope -eq "AllUsers")
+        {
+            $AllUsersDir = Join-Path -Path "/usr" -ChildPath "local" -AdditionalChildPath "share", "powershell", "Modules"
+            return $AllUsersDir
+        }
+    }
 }
 
 ##############################################################################
@@ -149,14 +157,28 @@ Function Add-M365PSProfile {
 
         Needs to be executed separately for PowerShell v5 and v7.
 
+        .PARAMETER ProfileType
+        Specifies which PowerShell Profile to modify:
+        - CurrentUserCurrentHost (default) - $PROFILE.CurrentUserCurrentHost
+        - CurrentUserAllHosts - $PROFILE.CurrentUserAllHosts
+        - AllUsersCurrentHost - $PROFILE.AllUsersCurrentHost
+        - AllUsersAllHosts - $PROFILE.AllUsersAllHosts
+
         .EXAMPLE
         Add-M365PSProfile
+
+        .EXAMPLE
+        Add-M365PSProfile -ProfileType AllUsersCurrentHost
 
         .LINK
         https://github.com/fabrisodotps1/M365PSProfile
     #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
-        param()
+        param(
+            [parameter(mandatory = $false)][ValidateSet("CurrentUserCurrentHost", "CurrentUserAllHosts", "AllUsersCurrentHost", "AllUsersAllHosts")][string]$ProfileType = "CurrentUserCurrentHost"
+        )
+
+    $ProfilePath = $PROFILE.$ProfileType
 
     $M365PSProfileContent = @"
 
@@ -165,23 +187,27 @@ Import-Module -Name M365PSProfile
 Install-M365Module
 "@
 
-    If (-not(Test-Path -Path $Profile)) {
+    If (-not(Test-Path -Path $ProfilePath)) {
         #No Profile found
-        Write-Host "No PowerShell Profile exists. A new Profile with the M365PSProfile setup is created."
-        $M365PSProfileContent | Out-File -FilePath $Profile -Encoding utf8 -Force
+        Write-Host "No PowerShell Profile ($ProfileType) exists. A new Profile with the M365PSProfile setup is created."
+        #Ensure the directory exists
+        $ProfileDir = Split-Path -Path $ProfilePath -Parent
+        If (-not(Test-Path -Path $ProfileDir)) {
+            New-Item -ItemType Directory -Path $ProfileDir -Force | Out-Null
+        }
+        $M365PSProfileContent | Out-File -FilePath $ProfilePath -Encoding utf8 -Force
     } else {
         #Profile found
-        $ProfileContent = Get-Content -Path $Profile -Encoding utf8
-        #$ProfileContent | Where-Object {$_ -match "Import-Module -Name M365PSProfile"}
+        $ProfileContent = Get-Content -Path $ProfilePath -Encoding utf8
         $Match = $ProfileContent | Where-Object {$_ -match "Install-M365Module"}
         If ($Null -ne $Match)
         {
             #M365PSProfile already in Profile
-            Write-Host "PowerShell Profile already exists. M365PSProfile is already in the Profile." -ForegroundColor Yellow
+            Write-Host "PowerShell Profile ($ProfileType) already exists. M365PSProfile is already in the Profile." -ForegroundColor Yellow
         } else {
             #M365PSProfile not in Profile
-            Write-Host "PowerShell Profile already exists. Adding M365PSProfile to it" -ForegroundColor Yellow
-            Add-Content -Path $Profile -Value $M365PSProfileContent -Encoding utf8
+            Write-Host "PowerShell Profile ($ProfileType) already exists. Adding M365PSProfile to it" -ForegroundColor Yellow
+            Add-Content -Path $ProfilePath -Value $M365PSProfileContent -Encoding utf8
         }
     }
 }
