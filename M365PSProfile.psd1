@@ -116,6 +116,8 @@ V0.9.1
 - Changed: Multiple Modules will be uninstalled after 5 seconds delay with User Warning
 - Added: KeepMultipleVersions switch to Install-M365Module to keep multiple Versions of Modules installed
 - Added: Microsoft.Entra and Microsoft.Entra.Beta to Standard Modules List
+- Enabled Linux/macOS support in Get-M365ModulePath by https://github.com/spiddeer
+- Added -ProfileType parameter to Add-M365PSProfile by https://github.com/spiddeer
 ---------------------------------------------------------------------------------------------
 '
 } # End of PSData hashtable
