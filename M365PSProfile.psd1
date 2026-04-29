@@ -8,7 +8,7 @@
 RootModule = 'M365PSProfile.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.9.0'
+ModuleVersion = '0.9.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core', 'Desktop')
@@ -111,6 +111,18 @@ PrivateData = @{
 		ReleaseNotes = '
 ---------------------------------------------------------------------------------------------
 Whats new in this release:
+V0.9.1
+- Bugfix: Missing comma in standard modules array caused M365PSProfile and MSCommerce to merge into one string
+- Bugfix: Exit replaced with return in VSCode detection to prevent terminating the PS session
+- Bugfix: Version comparison for PSResourceGet now uses [System.Version] instead of string comparison
+- Bugfix: Null reference crash when PSResourceGet is not installed
+- Bugfix: Disconnect-All now guards MicrosoftTeams and Microsoft.Graph before calling disconnect
+- Added -Force switch to Install-M365Module to skip interactive prompt in automated/profile scenarios
+- Added [CmdletBinding()] to Install-M365Module and Uninstall-M365Module
+- Fixed switch FileMode default value and idiomatic usage
+- Initialized IsAdmin to false before Windows-only admin check block
+- PSVersion detection now uses PSVersionTable instead of Host.Version
+---------------------------------------------------------------------------------------------
 V0.9.0
 - Added MicrosoftPlaces Module to the Standard Modules (Get-M365StandardModule)
 - Bugfix: Uninstall-M365Module -FileMode did not cover all aspects
