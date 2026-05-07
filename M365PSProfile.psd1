@@ -49,7 +49,7 @@ PowerShellVersion = '5.1'
 
 # Modules that must be imported into the global environment prior to importing this module
 # RequiredModules = @()
-RequiredModules = @(@{ModuleName = 'Microsoft.PowerShell.PSResourceGet'; GUID = 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'; ModuleVersion = '1.1.1'; })
+RequiredModules = @(@{ModuleName = 'Microsoft.PowerShell.PSResourceGet'; GUID = 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'; ModuleVersion = '1.2.0'; })
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -119,6 +119,7 @@ V0.9.1
 - Enabled Linux/macOS support in Get-M365ModulePath by https://github.com/spiddeer
 - Added -ProfileType parameter to Add-M365PSProfile by https://github.com/spiddeer
 - Changed Logic to detect the Microsoft.PowerShell.PSResourceGet since it is installed in the Program Files folder since PowerShell 7.6.0
+- Updated the PSResourceGet dependency to version 1.2.0 to support the new features and improvements in PSResourceGet
 ---------------------------------------------------------------------------------------------
 '
 } # End of PSData hashtable
