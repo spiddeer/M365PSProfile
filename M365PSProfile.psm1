@@ -634,8 +634,27 @@ Function Install-M365Module {
     #Can't uninstall loaded DLL's so you have to uninstall next time you start PowerShell
     #[System.AppDomain]::CurrentDomain.GetAssemblies() | where {$_.Location -match "Microsoft.PowerShell.PSResourceGet"}
     $Module = "Microsoft.PowerShell.PSResourceGet"
-    [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope $Scope -ErrorAction SilentlyContinue | Sort-Object Version -Descending
-    Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
+    If ($Scope -eq "CurrentUser")
+    {
+        [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope $Scope -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
+        If ($Null -eq $InstalledModules) 
+        {
+            #Module not found - try to find it in AllUsers Scope
+            [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope "AllUsers" -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
+                If ($Null -eq $InstalledModules) 
+                {
+                    # Since PowerShell v7.6.0 the PSResourceGet Module is included in PowerShell. If it is not found in the CurrentUser or AllUsers Scope, it should be loaded as a system module.
+                    [Array]$InstalledModules = Get-Module -Name Microsoft.PowerShell.PSResourceGet -ListAvailable -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
+                    Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
+                } else {
+                    Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
+                }
+        } else {
+            Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
+        }
+
+    } 
+
 
     If ($InstalledModules.Count -gt 1)
     {

@@ -118,6 +118,7 @@ V0.9.1
 - Added: Microsoft.Entra and Microsoft.Entra.Beta to Standard Modules List
 - Enabled Linux/macOS support in Get-M365ModulePath by https://github.com/spiddeer
 - Added -ProfileType parameter to Add-M365PSProfile by https://github.com/spiddeer
+- Changed Logic to detect the Microsoft.PowerShell.PSResourceGet since it is installed in the Program Files folder since PowerShell 7.6.0
 ---------------------------------------------------------------------------------------------
 '
 } # End of PSData hashtable
