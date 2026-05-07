@@ -120,6 +120,7 @@ V0.9.1
 - Added -ProfileType parameter to Add-M365PSProfile by https://github.com/spiddeer
 - Changed Logic to detect the Microsoft.PowerShell.PSResourceGet since it is installed in the Program Files folder since PowerShell 7.6.0
 - Updated the PSResourceGet dependency to version 1.2.0 to support the new features and improvements in PSResourceGet
+- Added Pester Tests for the Module
 ---------------------------------------------------------------------------------------------
 '
 } # End of PSData hashtable

@@ -10,6 +10,13 @@ Invoke-ScriptAnalyzer -Path C:\GIT_WorkingDir\M365PSProfile\M365PSProfile.psm1 -
 Invoke-ScriptAnalyzer -Path C:\GIT_WorkingDir\M365PSProfile\M365PSProfile.psm1 -ExcludeRule PSAvoidUsingWriteHost,PSAvoidGlobalVars
 ```
 
+## Pester
+
+```pwsh
+Install-PSResource -Name PSScriptAnalyzer -Scope CurrentUser
+Invoke-Pester -Path .\Tests -Output Detailed
+```
+
 ## Testing
 
 ```pwsh
