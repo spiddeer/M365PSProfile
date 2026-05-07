@@ -326,6 +326,35 @@ Function Uninstall-M365Module {
                 }
             }
 
+            #If Microsoft.Entra also Uninstall all Microsoft.Entra.* Modules
+            If ($Module -eq "Microsoft.Entra")
+            {
+                Write-Host "Uninstall Microsoft.Entra.* Modules" -ForegroundColor Yellow
+                #Get-InstalledPSResource -Name "Microsoft.Entra.*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
+                $InstalledEntraModules = Get-InstalledPSResource -Name "Microsoft.Entra.*" -Scope $Scope -ErrorAction SilentlyContinue
+                Foreach ($EntraModule in $InstalledEntraModules)
+                {
+                    #FileMode
+                    If ($FileMode -eq $true)
+                    {
+                        #Write-Host "Using FileMode. Remove Module: $($EntraModule.Name)" -ForegroundColor Yellow
+                        $ModulesPath = Get-M365ModulePath -Scope $Scope
+                        Get-ChildItem -Path $ModulesPath -Filter "Microsoft.Entra.*" -Recurse | Remove-Item -Force -Recurse
+                    } else {
+                        try {
+                            #Write-Host "Uninstall Module: $($EntraModule.Name) $($EntraModule.Version.ToString())" -ForegroundColor Yellow
+                            Uninstall-PSResource -Name $EntraModule.Name -Scope $Scope -SkipDependencyCheck -WarningAction SilentlyContinue
+                        } catch [System.ArgumentException] {
+                            $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
+                            if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
+                            {
+                                Write-Host "Error occured. Try using -FileMode" -ForegroundColor Red
+                            }
+                        }
+                    }
+                }
+            }
+
             #If Microsoft.Graph also Uninstall all Microsoft.Graph.* Modules
             If ($Module -eq "Microsoft.Graph")
             {
@@ -394,6 +423,29 @@ Function Uninstall-M365Module {
                     try {
                         Write-Host "NO AZ Root Module. Uninstall AZ.* Modules" -ForegroundColor Yellow
                         Get-InstalledPSResource -Name "AZ.*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
+                    } catch [System.ArgumentException] {
+                        $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
+                        if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
+                        {
+                            Write-Host "Error Occured try using -FileMode" -ForegroundColor Red
+                        }
+                    }
+                }
+            }
+
+            #If Microsoft.Entra also Uninstall all Microsoft.Entra.* Modules
+            If ($Module -eq "Microsoft.Entra")
+            {
+                #FileMode
+                If ($FileMode -eq $true)
+                {
+                    Write-Host "Using FileMode. Remove all Microsoft.Entra.* Modules" -ForegroundColor Yellow
+                    $ModulesPath = Get-M365ModulePath -Scope $Scope
+                    Get-ChildItem -Path $ModulesPath -Filter "MicrosoftEntra.*" -Recurse | Remove-Item -Force -Recurse
+                } else {
+                    try {
+                        Write-Host "NO Entra Root Module. Uninstall Microsoft.Entra.* Modules" -ForegroundColor Yellow
+                        Get-InstalledPSResource -Name "Entra.*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
                         if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
@@ -637,11 +689,11 @@ Function Install-M365Module {
     If ($Scope -eq "CurrentUser")
     {
         [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope $Scope -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
-        If ($Null -eq $InstalledModules) 
+        If ($Null -eq $InstalledModules)
         {
             #Module not found - try to find it in AllUsers Scope
             [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope "AllUsers" -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
-                If ($Null -eq $InstalledModules) 
+                If ($Null -eq $InstalledModules)
                 {
                     # Since PowerShell v7.6.0 the PSResourceGet Module is included in PowerShell. If it is not found in the CurrentUser or AllUsers Scope, it should be loaded as a system module.
                     [Array]$InstalledModules = Get-Module -Name Microsoft.PowerShell.PSResourceGet -ListAvailable -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
@@ -652,9 +704,7 @@ Function Install-M365Module {
         } else {
             Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
         }
-
-    } 
-
+    }
 
     If ($InstalledModules.Count -gt 1)
     {
@@ -701,7 +751,7 @@ Function Install-M365Module {
                 $PSGalleryVersion = $PSGalleryModule.Version.ToString()
                 Write-Host "Install newest Module $Module $PSGalleryVersion" -ForegroundColor Yellow
 
-                Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository #-Prerelease 
+                Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository #-Prerelease
             }
         } else {
             #Module found
