@@ -103,6 +103,7 @@ PowerShell 7
 -Scope [Default:CurrentUser/AllUsers]
 -AsciiArt [Default:true/false]
 -RunInVSCode [Default:false/true]
+-KeepMultipleVersions [Default:false/true]
 ```
 
 ### PowerShell Profiles
