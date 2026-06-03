@@ -13,8 +13,8 @@ Invoke-ScriptAnalyzer -Path C:\GIT_WorkingDir\M365PSProfile\M365PSProfile.psm1 -
 ## Pester
 
 ```pwsh
-Install-PSResource -Name PSScriptAnalyzer -Scope CurrentUser
-Invoke-Pester -Path C:\Git_WorkingDir\M365PSProfile\Tests -Output Detailed
+Install-PSResource -Name Pester -Scope CurrentUser
+Invoke-Pester -Path C:\Git_WorkingDir\M365PSProfile\Tests -OutputFormat Detailed
 ```
 
 ## Testing

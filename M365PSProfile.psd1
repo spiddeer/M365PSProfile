@@ -113,13 +113,13 @@ PrivateData = @{
 Whats new in this release:
 V0.9.1
 - Changed: Replace Uninstall-PSResource with Uninstall-M365Module -FileMode to cover all aspects of uninstallation
-- Changed: Multiple Modules will be uninstalled after 5 seconds delay with User Warning (Resolves: #26)
-- Added: -KeepMultipleVersions switch to Install-M365Module to keep multiple Versions of Modules installed (Resolves: #26)
+- Changed: Multiple Modules will be uninstalled after 5 seconds delay with User Warning
+- Added: -KeepMultipleVersions switch to Install-M365Module to keep multiple Versions of Modules installed
 - Added: Microsoft.Entra and Microsoft.Entra.Beta to Standard Modules List
-- Enabled Linux/macOS support in Get-M365ModulePath by @spiddeer
-- Added -ProfileType parameter to Add-M365PSProfile by @spiddeer
+- Enabled Linux/macOS support in Get-M365ModulePath
+- Added -ProfileType parameter to Add-M365PSProfile
 - Changed Logic to detect the Microsoft.PowerShell.PSResourceGet since it is installed in the Program Files folder since PowerShell 7.6.0
-- Updated the PSResourceGet dependency to version 1.2.0 to support the new features and improvements in PSResourceGet (Resolves: #25)
+- Updated the PSResourceGet dependency to version 1.2.0 to support the new features and improvements in PSResourceGet
 - Added Pester Tests for the Module
 ---------------------------------------------------------------------------------------------
 '
