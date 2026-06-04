@@ -1,8 +1,20 @@
+# Deployment
+
+This descripes the deployment
+
 ## Script Analyzer
 
 ```pwsh
 Install-PSResource -Name PSScriptAnalyzer -Scope CurrentUser
 Invoke-ScriptAnalyzer -Path C:\GIT_WorkingDir\M365PSProfile\M365PSProfile.psm1 -ExcludeRule PSAvoidUsingWriteHost
+Invoke-ScriptAnalyzer -Path C:\GIT_WorkingDir\M365PSProfile\M365PSProfile.psm1 -ExcludeRule PSAvoidUsingWriteHost,PSAvoidGlobalVars
+```
+
+## Pester
+
+```pwsh
+Install-PSResource -Name Pester -Scope CurrentUser
+Invoke-Pester -Path C:\Git_WorkingDir\M365PSProfile\Tests -OutputFormat Detailed
 ```
 
 ## Testing

@@ -8,7 +8,7 @@
 RootModule = 'M365PSProfile.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.9.0'
+ModuleVersion = '0.9.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core', 'Desktop')
@@ -49,7 +49,7 @@ PowerShellVersion = '5.1'
 
 # Modules that must be imported into the global environment prior to importing this module
 # RequiredModules = @()
-RequiredModules = @(@{ModuleName = 'Microsoft.PowerShell.PSResourceGet'; GUID = 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'; ModuleVersion = '1.1.1'; })
+RequiredModules = @(@{ModuleName = 'Microsoft.PowerShell.PSResourceGet'; GUID = 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'; ModuleVersion = '1.2.0'; })
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -90,31 +90,37 @@ AliasesToExport = @()
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
 
-	PSData = @{
+    PSData = @{
 
-		# Tags applied to this module. These help with module discovery in online galleries.
-		Tags = @('Office365', 'Microsoft365', 'O365', 'M365', 'Admin' )
+        # Tags applied to this module. These help with module discovery in online galleries.
+        Tags = @('Office365', 'Microsoft365', 'O365', 'M365', 'Admin' )
 
-		# A URL to the license for this module.
-		# LicenseUri = ''
+        # A URL to the license for this module.
+        # LicenseUri = ''
 
-		# A URL to the main website for this project.
-		ProjectUri = 'https://github.com/fabrisodotps1/M365PSProfile'
+        # A URL to the main website for this project.
+        ProjectUri = 'https://github.com/fabrisodotps1/M365PSProfile'
 
-		# A URL to an icon representing this module.
-		IconUri = 'https://raw.githubusercontent.com/fabrisodotps1/M365PSProfile/develop/M365PSProfile.png'
+        # A URL to an icon representing this module.
+        IconUri = 'https://raw.githubusercontent.com/fabrisodotps1/M365PSProfile/develop/M365PSProfile.png'
 
- 		# Set to a prerelease string value if the release should be a prerelease.
- 		#Prerelease = 'Preview2'
+        # Set to a prerelease string value if the release should be a prerelease.
+        #Prerelease = 'Preview2'
 
-		# ReleaseNotes of this module
-		ReleaseNotes = '
+        # ReleaseNotes of this module
+        ReleaseNotes = '
 ---------------------------------------------------------------------------------------------
 Whats new in this release:
-V0.9.0
-- Added MicrosoftPlaces Module to the Standard Modules (Get-M365StandardModule)
-- Bugfix: Uninstall-M365Module -FileMode did not cover all aspects
-- Updated to Microsoft.PowerShell.PSResourceGet 1.1.1
+V0.9.1
+- Changed: Replace Uninstall-PSResource with Uninstall-M365Module -FileMode to cover all aspects of uninstallation
+- Changed: Multiple Modules will be uninstalled after 5 seconds delay with User Warning
+- Added: -KeepMultipleVersions switch to Install-M365Module to keep multiple Versions of Modules installed
+- Added: Microsoft.Entra and Microsoft.Entra.Beta to Standard Modules List
+- Enabled Linux/macOS support in Get-M365ModulePath
+- Added -ProfileType parameter to Add-M365PSProfile
+- Changed Logic to detect the Microsoft.PowerShell.PSResourceGet since it is installed in the Program Files folder since PowerShell 7.6.0
+- Updated the PSResourceGet dependency to version 1.2.0 to support the new features and improvements in PSResourceGet
+- Added Pester Tests for the Module
 ---------------------------------------------------------------------------------------------
 '
 } # End of PSData hashtable
