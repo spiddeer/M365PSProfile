@@ -441,11 +441,11 @@ Function Uninstall-M365Module {
                 {
                     Write-Host "Using FileMode. Remove all Microsoft.Entra.* Modules" -ForegroundColor Yellow
                     $ModulesPath = Get-M365ModulePath -Scope $Scope
-                    Get-ChildItem -Path $ModulesPath -Filter "MicrosoftEntra.*" -Recurse | Remove-Item -Force -Recurse
+                    Get-ChildItem -Path $ModulesPath -Filter "Microsoft.Entra.*" -Recurse | Remove-Item -Force -Recurse
                 } else {
                     try {
                         Write-Host "NO Entra Root Module. Uninstall Microsoft.Entra.* Modules" -ForegroundColor Yellow
-                        Get-InstalledPSResource -Name "Entra.*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
+                        Get-InstalledPSResource -Name "Microsoft.Entra.*" -Scope $Scope -ErrorAction SilentlyContinue | Uninstall-PSResource -Scope $Scope -SkipDependencyCheck
                     } catch [System.ArgumentException] {
                         $FullyQualifiedErrorId = $error[0].FullyQualifiedErrorId
                         if ($FullyQualifiedErrorId -eq "ErrorDeletingDirectory,Microsoft.PowerShell.PSResourceGet.Cmdlets.UninstallPSResource")
@@ -524,8 +524,16 @@ Function Disconnect-All {
     #>
 
     Get-PSSession | Remove-PSSession
-    Disconnect-MicrosoftTeams -ErrorAction SilentlyContinue
-    Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
+
+    If (Get-Module -Name "MicrosoftTeams")
+    {
+        Disconnect-MicrosoftTeams -ErrorAction SilentlyContinue
+    }
+
+    If (Get-Module -Name "Microsoft.Graph.Authentication")
+    {
+        Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
+    }
 
     If (Get-Module -Name "Microsoft.Online.SharePoint.PowerShell")
     {
@@ -640,7 +648,7 @@ Function Install-M365Module {
     #Check if it is running in VSCode
     if ($env:TERM_PROGRAM -eq 'vscode') {
         If ($RunInVSCode -eq $false) {
-            Exit
+            return
         }
     }
 
@@ -686,24 +694,22 @@ Function Install-M365Module {
     #Can't uninstall loaded DLL's so you have to uninstall next time you start PowerShell
     #[System.AppDomain]::CurrentDomain.GetAssemblies() | where {$_.Location -match "Microsoft.PowerShell.PSResourceGet"}
     $Module = "Microsoft.PowerShell.PSResourceGet"
-    If ($Scope -eq "CurrentUser")
+    [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope $Scope -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
+    If (($Null -eq $InstalledModules) -and ($Scope -eq "CurrentUser"))
     {
-        [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope $Scope -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
-        If ($Null -eq $InstalledModules)
-        {
-            #Module not found - try to find it in AllUsers Scope
-            [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope "AllUsers" -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
-                If ($Null -eq $InstalledModules)
-                {
-                    # Since PowerShell v7.6.0 the PSResourceGet Module is included in PowerShell. If it is not found in the CurrentUser or AllUsers Scope, it should be loaded as a system module.
-                    [Array]$InstalledModules = Get-Module -Name Microsoft.PowerShell.PSResourceGet -ListAvailable -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
-                    Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
-                } else {
-                    Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
-                }
-        } else {
-            Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
-        }
+        #Module not found - try to find it in AllUsers Scope
+        [Array]$InstalledModules = Get-InstalledPSResource -Name $Module -Scope "AllUsers" -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
+    }
+
+    If ($Null -eq $InstalledModules)
+    {
+        # Since PowerShell v7.6.0 the PSResourceGet Module is included in PowerShell. If it is not found in the requested scope, it should be loaded as a system module.
+        [Array]$InstalledModules = Get-Module -Name Microsoft.PowerShell.PSResourceGet -ListAvailable -ErrorAction SilentlyContinue | Sort-Object Version -Descending -ErrorAction SilentlyContinue
+    }
+
+    If ($InstalledModules.Count -gt 0)
+    {
+        Write-Host "Checking Module: $Module $($InstalledModules[0].Version.ToString())" -ForegroundColor Green
     }
 
     If ($InstalledModules.Count -gt 1)
@@ -712,6 +718,7 @@ Function Install-M365Module {
         Write-Host "Uninstall Module $Module $Version" -ForegroundColor Yellow
         #Uninstall-PSResource -Name $Module -Scope $Scope -Version $Version -SkipDependencyCheck
         Uninstall-M365Module -Module $Module -Scope $Scope -FileMode
+        Install-PSResource -Name $Module -Scope $Scope -TrustRepository -WarningAction SilentlyContinue -Repository $Repository
     } else {
         If ($InstalledModules.Count -eq 0)
         {
@@ -725,7 +732,7 @@ Function Install-M365Module {
 
             #Get Module from PowerShell Gallery (or another repository if specified)
             $PSGalleryModule = Find-PSResource -Name $Module -Repository $Repository
-            $PSGalleryVersion = $PSGalleryModule.Version.ToString()
+            [System.Version]$PSGalleryVersion = $PSGalleryModule.Version.ToString()
 
             #Version Check
             If ($PSGalleryVersion -gt $InstalledModuleVersion)
@@ -831,7 +838,7 @@ Function Install-M365Module {
 ##############################################################################
 # Import Module
 ##############################################################################
-If (-not(Test-Path -Path $Profile))
+If ([string]::IsNullOrWhiteSpace([string]$Profile) -or -not(Test-Path -Path $Profile))
 {
     Write-Host "No PowerShell Profile exists. You can add the M365PSProfile Update check with Add-M365PSProfile" -ForegroundColor Yellow
 } else {
